@@ -3,6 +3,13 @@ from bokeh.plotting import figure
 import numpy as np
 import pandas as pd
 
+st.set_page_config(
+    page_title="PKV vs GKV",
+    # page_icon=':chart_with_upwards_trend:',
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 with st.sidebar:
     st.title("Einstellungen")
 
@@ -190,7 +197,8 @@ p = figure(
     x_axis_label='Alter',
     y_axis_label='Beitrag (€)',
     plot_width=1000,
-    plot_height=500,
+    plot_height=600,
+    sizing_mode='stretch_width',
     toolbar_location=None,
     tools="",
 )
