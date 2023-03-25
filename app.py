@@ -143,6 +143,11 @@ with st.sidebar:
             'Für eine mittlere Rückzahlung (bspw. bei Staffelung) den Anteil auf 100 '
             'und die Rückzahlung auf das geschätzte Mittel setzen.'
         )
+        st.write(
+            'Gesetzliche Rückstellung: Dieser Anteil wird vor der Rente für die '
+            'Altersentlastung angespart und entfällt ab der Rente. Ist im PKV-Beitrag '
+            'oben bereits enthalten.'
+        )
     # Sparen
     with st.expander("Anlage der Ersparnis"):
         cols_sparen = st.columns(2)
