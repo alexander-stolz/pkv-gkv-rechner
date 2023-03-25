@@ -104,10 +104,15 @@ with st.sidebar:
         )
 
         von_anpassung_ausgeschlossen_pkv = st.number_input(
-            'Von PKV-Anpassung unbeteiliger Betrag, z.B. KT (€)',
+            'Von PKV-Anpassung unbeteiliger Betrag',
             min_value=0,
             max_value=pkv_beitrag,
             value=63 + 50 + 3 + 22,
+        )
+
+        st.write(
+            'Unbeteiligter Betrag: Dieser Anteil ist fix, wird also nicht '
+            'jährlich angepasst. Ein Beispiel wäre das Krankentagegeld.'
         )
 
     with st.expander("Rückstellungen / Rückzahlungen"):
@@ -147,6 +152,7 @@ with st.sidebar:
         sparrendite = cols_sparen[1].number_input(
             'Verzinsung (%)', min_value=0.0, max_value=50.0, value=3.0, step=0.5
         )
+        st.write('Sparquote: Welcher Teil der Ersparnis soll gespart werden?')
 
     with st.expander("Sonstiges"):
         berechnung_bis = st.number_input(
