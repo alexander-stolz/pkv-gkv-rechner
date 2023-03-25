@@ -193,6 +193,9 @@ pillow==9.4.0 ; python_version >= "3.8" and python_version < "3.10" \
     --hash=sha256:f6e78171be3fb7941f9910ea15b4b14ec27725865a73c15277bc39f5ca4f8391 \
     --hash=sha256:f715c32e774a60a337b2bb8ad9839b4abf75b267a0f18806f6f4f5f1688c4b5a \
     --hash=sha256:fb5c1ad6bad98c57482236a21bf985ab0ef42bd51f7ad4e4538e89a997624e12
+plotly==5.13.1 ; python_version >= "3.8" and python_version < "3.10" \
+    --hash=sha256:90ee9a1fee0dda30e2830e129855081ea17bd1b06a553a62b62de15caff1a219 \
+    --hash=sha256:f776a5c664908450c6c1727f61e8e2e22798d9c6c69d37a9057735365084a2fa
 python-dateutil==2.8.2 ; python_version >= "3.8" and python_version < "3.10" \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
     --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
@@ -243,6 +246,9 @@ pyyaml==6.0 ; python_version >= "3.8" and python_version < "3.10" \
 six==1.16.0 ; python_version >= "3.8" and python_version < "3.10" \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
+tenacity==8.2.2 ; python_version >= "3.8" and python_version < "3.10" \
+    --hash=sha256:2f277afb21b851637e8f52e6a613ff08734c347dc19ade928e519d7d2d8569b0 \
+    --hash=sha256:43af037822bd0029025877f3b2d97cc4d7bb0c2991000a3d59d71517c5c969e0
 tornado==6.2 ; python_version >= "3.8" and python_version < "3.10" \
     --hash=sha256:1d54d13ab8414ed44de07efecb97d4ef7c39f7438cf5e976ccd356bebb1b5fca \
     --hash=sha256:20f638fd8cc85f3cbae3c732326e96addff0a15e22d80f049e00121651e82e72 \

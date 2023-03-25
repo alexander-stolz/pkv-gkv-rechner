@@ -1,8 +1,12 @@
 from typing import OrderedDict, Tuple
 import streamlit as st
-from bokeh.plotting import figure
+
+# from bokeh.plotting import figure
+# use plotly for plotting
+import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
+
 
 st.set_page_config(
     page_title="PKV vs GKV",
@@ -245,19 +249,38 @@ x = np.arange(alter_start, berechnung_bis + 1, 1)
 y_gkv, hinweise_gkv = get_gkv_beitrag(x)
 y_pkv, hinweise_pkv = get_pkv_beitrag(x)
 
-p = figure(
-    title="Beitragsverlauf",
-    x_axis_label='Alter',
-    y_axis_label='Beitrag (€)',
-    plot_width=1000,
-    plot_height=600,
-    sizing_mode='stretch_width',
-    toolbar_location=None,
-    tools="",
+# p = figure(
+#     title="Beitragsverlauf",
+#     x_axis_label='Alter',
+#     y_axis_label='Beitrag (€)',
+#     plot_width=1000,
+#     plot_height=600,
+#     sizing_mode='stretch_width',
+#     toolbar_location=None,
+#     tools="",
+# )
+# p.line(x, y_gkv, line_width=2, color='#1f77b4', legend_label="GKV")
+# p.line(x, y_pkv, line_width=2, color="green", legend_label="PKV")
+# st.bokeh_chart(p)
+
+# use plotly express
+fig = go.Figure(
+    layout=dict(
+        # title=dict(text="Beitragsverlauf", x=0.5),
+        xaxis_title="Alter",
+        yaxis_title="Beitrag (€)",
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+    )
 )
-p.line(x, y_gkv, line_width=2, color='#1f77b4', legend_label="GKV")
-p.line(x, y_pkv, line_width=2, color="green", legend_label="PKV")
-st.bokeh_chart(p)
+fig.add_scatter(x=x, y=y_gkv, mode='lines', name='GKV')
+fig.add_scatter(x=x, y=y_pkv, mode='lines', name='PKV')
+fig.update_layout(
+    width=1000,
+    height=600,
+    margin=dict(l=20, r=20, t=40, b=20),
+    legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+)
+st.plotly_chart(fig, use_container_width=True)
 
 st.subheader(f'Summe aller Beiträge bis zum {berechnung_bis}. Lebensjahr')
 
