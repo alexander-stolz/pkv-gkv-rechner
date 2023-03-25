@@ -79,7 +79,7 @@ with st.sidebar:
             step=0.1,
             format="%.1f",
         )
-        anpassung_pkv_80 = cols_anpassung_60[0].number_input(
+        anpassung_pkv_80 = cols_anpassung_60[1].number_input(
             'PKV Anpassung ab 80 (%)',
             min_value=0.0,
             max_value=25.0,
@@ -87,17 +87,9 @@ with st.sidebar:
             step=0.1,
             format="%.1f",
         )
-        anpassung_gkv_60 = cols_anpassung_60[1].number_input(
-            'GKV Anpassung ab 60 (%)',
-            min_value=0.0,
-            max_value=25.0,
-            value=3.0,
-            step=0.1,
-            format="%.1f",
-        )
 
         von_anpassung_ausgeschlossen_pkv = st.number_input(
-            'Von Anpassung unbeteiliger PKV-Betrag (€)',
+            'Von PKV-Anpassung unbeteiliger Betrag, z.B. KT (€)',
             min_value=0,
             max_value=pkv_beitrag,
             value=63 + 50 + 3 + 22,
@@ -112,7 +104,7 @@ with st.sidebar:
             step=1.0,
         )
         entlastung_pkv = st.number_input(
-            'Altersentlastung ab Rente (€)', min_value=0, max_value=1000, value=235 + 31
+            'PKV-Entlastungen ab Rente (€)', min_value=0, max_value=1000, value=235 + 31
         )
         rueckzahlung_beitragsfrei = st.number_input(
             'Rückzahlung bei Leistungsfreiheit (%)',
