@@ -323,7 +323,8 @@ y_sparkonto = get_sparkonto(y_pkv, y_gkv)
 st.subheader('Beiträge')
 st.write(
     'Bis zur Rente bezahlt der Arbeitgeber die Hälfte der Beiträge, auch für Kinder. '
-    f'Die Rente ist mit {steuersatz_rente:.0f} % versteuert (siehe Sonstiges).'
+    f'Die Rente ist mit {steuersatz_rente:.0f} % versteuert (siehe Sonstiges). '
+    'Über die Legende kann die Rente eingeblendet werden.'
 )
 
 fig = go.Figure(
@@ -340,6 +341,8 @@ fig.add_scatter(
     y=y_rente,
     mode='lines',
     name=f'Netto-Rente (Steuersatz {steuersatz_rente} %)',
+    # hide by default
+    visible='legendonly',
 )
 fig.update_layout(
     width=1000,
