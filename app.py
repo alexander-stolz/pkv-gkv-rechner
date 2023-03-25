@@ -24,11 +24,12 @@ footer = """<style>
 
 a:link , a:visited {
   color: #999;
+  text-decoration: none;
 }
 </style>
 
 <div class="footer">
-    Open Source, Alexander Stolz
+    Alexander Stolz : <a href="mailto:amstolz@gmail.com">Kontakt</a>
 </div>
 """
 
