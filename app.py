@@ -312,6 +312,13 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Anzeige des Ersparten
 st.subheader(f'Verlauf des Sparkontos bei PKV-Vertrag ({sparrendite:.1f} % Verzinsung)')
+st.write(
+    'Unter der Annahme, dass man die Differenz zwischen GKV- und PKV-Beitrag anlegt, '
+    'falls der PKV-Beitrag niedriger ist und die Differenz aus dem Sparkonto '
+    'bezahlt, falls der PKV-Beitrag höher ist.'
+)
+
+
 fig = go.Figure(
     layout=dict(
         xaxis_title="Alter",
