@@ -184,7 +184,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
                 f'zwischen {rente_ab} - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
                 f'Reduzierung um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
-                f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente'
+                f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
             )
         elif a >= 80:
             beitrag = (
@@ -200,7 +200,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 f'Anpassung von {pkv_dynamisch:.0f} € '
                 f'zu {anpassung_pkv_80:.1f} % ab 80. Ohne Anpassung: {pkv_fix:.0f} € '
                 f'Reduzierung um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
-                f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente'
+                f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
             )
 
         rel_rueckzahlung_leistungsfrei = (
@@ -210,7 +210,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
         y_beitrag[i] = beitrag + kosten
     hinweise.append(
         f'Alle Beiträge reduziert um {rel_rueckzahlung_leistungsfrei * 100: .1f} % '
-        '(mittlere Rückzahlung bei Leistungsfreiheit)'
+        '(mittlere Rückzahlung bei Leistungsfreiheit).'
     )
     hinweise = OrderedDict.fromkeys(hinweise)
     return y_beitrag, hinweise
