@@ -157,8 +157,8 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
         if a < 60:
             beitrag = pkv_dynamisch * (1 + anpassung_pkv / 100) ** i + pkv_fix
             hinweise.append(
-                f'Anpassung bis 60 Jahre von {pkv_dynamisch:.2f} € '
-                f'zu {anpassung_pkv:.1f} %. Fix: {pkv_fix:.2f} €'
+                f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv:.1f} % '
+                f'bis 60 Jahre. Ohne Anpassung: {pkv_fix:.0f} €.'
             )
         elif 60 <= a < rente_ab:
             beitrag = (
@@ -168,8 +168,8 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 + pkv_fix
             )
             hinweise.append(
-                f'Anpassung zwischen 60 - {rente_ab} von {pkv_dynamisch:.2f} € '
-                f'zu {anpassung_pkv_60:.1f} %. Fix: {pkv_fix:.2f} €'
+                f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
+                f'zwischen 60 - {rente_ab} Jahre. Ohne Anpassung: {pkv_fix:.0f} €.'
             )
         elif rente_ab <= a < 80:
             beitrag = (
@@ -181,10 +181,10 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             beitrag *= 1 - faktor_rueckstellung / 100
             kosten -= entlastung_pkv + rente * 1.03 ** (a - rente_ab) * 0.146 / 2
             hinweise.append(
-                f'Anpassung zwischen {rente_ab} - 80 von {pkv_dynamisch:.2f} € '
-                f'zu {anpassung_pkv_60:.1f} %. Fix: {pkv_fix:.2f} € '
-                f'reduziert um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
-                f'{entlastung_pkv:.2f} € (Entlastung PKV) und 7.3 % von der Rente'
+                f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
+                f'zwischen {rente_ab} - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
+                f'Reduzierung um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
+                f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente'
             )
         elif a >= 80:
             beitrag = (
@@ -197,10 +197,10 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             beitrag *= 1 - faktor_rueckstellung / 100
             kosten -= entlastung_pkv + rente * 1.03 ** (a - rente_ab) * 0.146 / 2
             hinweise.append(
-                f'Anpassung ab 80 von {pkv_dynamisch:.2f} € '
-                f'zu {anpassung_pkv_80:.1f} %. Fix: {pkv_fix:.2f} € '
-                f'reduziert um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
-                f'{entlastung_pkv:.2f} € (Entlastung PKV) und 7.3 % von der Rente'
+                f'Anpassung von {pkv_dynamisch:.0f} € '
+                f'zu {anpassung_pkv_80:.1f} % ab 80. Ohne Anpassung: {pkv_fix:.0f} € '
+                f'Reduzierung um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
+                f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente'
             )
 
         rel_rueckzahlung_leistungsfrei = (
