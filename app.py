@@ -24,7 +24,7 @@ with st.sidebar:
         'Alter', min_value=18, max_value=100, value=38
     )
     rente_ab = cols_alter[1].number_input(
-        'Rentenalter', min_value=18, max_value=100, value=67
+        'Rentenalter', min_value=63, max_value=67, value=67
     )
 
     # Beiträge
@@ -47,10 +47,6 @@ with st.sidebar:
         value=1.5,
         step=0.1,
         format="%.1f",
-    )
-
-    arbeit_bis = st.number_input(
-        'Berufstätig bis Alter', min_value=18, max_value=rente_ab, value=67
     )
 
     with st.expander("Kinder"):
@@ -145,18 +141,24 @@ with st.sidebar:
             'Sparquote (%)', min_value=0, max_value=100, value=100, step=5
         )
         sparrendite = cols_sparen[1].number_input(
-            'Verzinsung (%)', min_value=0.0, max_value=50.0, value=0.0, step=0.5
+            'Verzinsung (%)', min_value=0.0, max_value=50.0, value=3.0, step=0.5
         )
 
     with st.expander("Sonstiges"):
         berechnung_bis = st.number_input(
             'Berechnung bis Alter', min_value=18, max_value=150, value=100
         )
+        steuersatz_rente = st.number_input(
+            'Steuersatz bei Rente (%)', min_value=0, max_value=45, value=35
+        )
 
 
 def get_rente(alter: int) -> float:
+    faktor_rentenanpassung = (1 + rentenanpassung / 100) ** (alter - alter_start)
+    # für jeden Monat frühzeitig Rente gibt es 0,3% weniger Rente (dauerhaft)
+    faktor_fruehzeitig = 1 - 0.003 * (67 - rente_ab) * 12
     if alter >= rente_ab:
-        return rente * (1 + rentenanpassung / 100) ** (alter - alter_start)
+        return rente * faktor_rentenanpassung * faktor_fruehzeitig
     else:
         return 0
 
@@ -165,10 +167,8 @@ def get_gkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
     hinweise = []
     y_beitrag = np.zeros_like(x_alter)
     for i, a in enumerate(x_alter):
-        if a < arbeit_bis:
-            beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i
-        elif arbeit_bis <= a < rente_ab:
-            beitrag = 0
+        if a < rente_ab:
+            beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i / 2
         elif a >= rente_ab:
             beitrag = get_rente(a) * (0.146 / 2 + 0.0305)
         y_beitrag[i] = beitrag
@@ -196,12 +196,12 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 )
             kosten += kosten_kinder
         if a < 60:
-            beitrag = pkv_dynamisch * (1 + anpassung_pkv / 100) ** i + pkv_fix
+            beitrag = (pkv_dynamisch * (1 + anpassung_pkv / 100) ** i + pkv_fix) / 2
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv:.1f} % '
-                f'bis 60 Jahre. Ohne Anpassung: {pkv_fix:.0f} €.'
+                f'bis 60 Jahre. Ohne Anpassung: {pkv_fix:.0f} €. AG übernimmt die Hälfte.'
             )
-        elif 60 <= a < rente_ab:
+        elif 60 <= a < 67:
             beitrag = (
                 pkv_dynamisch
                 * (1 + anpassung_pkv / 100) ** (60 - alter_start)
@@ -210,9 +210,13 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             )
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
-                f'zwischen 60 - {rente_ab} Jahre. Ohne Anpassung: {pkv_fix:.0f} €.'
+                f'zwischen 60 - 67 Jahre. Ohne Anpassung: {pkv_fix:.0f} €.'
             )
-        elif rente_ab <= a < 80:
+            if a < rente_ab:
+                # AG übernimmt die Hälfte
+                beitrag /= 2
+                hinweise[-1] += ' AG übernimmt die Hälfte.'
+        elif 67 <= a < 80:
             beitrag = (
                 pkv_dynamisch
                 * (1 + anpassung_pkv / 100) ** (60 - alter_start)
@@ -223,7 +227,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             kosten -= entlastung_pkv + get_rente(a) * 0.146 / 2
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
-                f'zwischen {rente_ab} - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
+                f'zwischen 67 - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
                 f'Reduzierung um {faktor_rueckstellung:.1f} % '
                 '(Beitrag Rückstellung entfällt), '
                 f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
@@ -278,7 +282,7 @@ y_gkv, hinweise_gkv = get_gkv_beitrag(x)
 y_pkv, hinweise_pkv = get_pkv_beitrag(x)
 
 x_rente = np.arange(rente_ab, berechnung_bis + 1, 1)
-y_rente = [get_rente(_) for _ in x_rente]
+y_rente = [get_rente(_) * (1 - steuersatz_rente / 100) for _ in x_rente]
 y_sparkonto = get_sparkonto(y_pkv, y_gkv)
 
 # Anzeige des Plots
@@ -286,13 +290,18 @@ st.subheader('Beiträge')
 fig = go.Figure(
     layout=dict(
         xaxis_title="Alter",
-        yaxis_title="Beitrag (€)",
+        yaxis_title="Netto-Betrag (€)",
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
     )
 )
-fig.add_scatter(x=x, y=y_gkv, mode='lines', name='GKV')
-fig.add_scatter(x=x, y=y_pkv, mode='lines', name='PKV')
-fig.add_scatter(x=x_rente, y=y_rente, mode='lines', name='Rente')
+fig.add_scatter(x=x, y=y_gkv, mode='lines', name='GKV-Beitrag')
+fig.add_scatter(x=x, y=y_pkv, mode='lines', name='PKV-Beitrag')
+fig.add_scatter(
+    x=x_rente,
+    y=y_rente,
+    mode='lines',
+    name=f'Netto-Rente (Steuersatz {steuersatz_rente} %)',
+)
 fig.update_layout(
     width=1000,
     height=600,
@@ -302,7 +311,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # Anzeige des Ersparten
-st.subheader('Verlauf des Sparkontos bei PKV-Vertrag')
+st.subheader(f'Verlauf des Sparkontos bei PKV-Vertrag ({sparrendite:.1f} % Verzinsung)')
 fig = go.Figure(
     layout=dict(
         xaxis_title="Alter",
@@ -311,6 +320,15 @@ fig = go.Figure(
     )
 )
 fig.add_scatter(x=x, y=y_sparkonto, mode='lines', name='Sparkonto')
+# Add solid line at 0
+fig.add_shape(
+    type="line",
+    x0=alter_start,
+    y0=0,
+    x1=berechnung_bis,
+    y1=0,
+    line=dict(color="#553333", width=1),
+)
 fig.update_layout(
     width=1000,
     height=400,
