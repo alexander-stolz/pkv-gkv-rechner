@@ -134,6 +134,10 @@ with st.sidebar:
             max_value=100,
             value=25,
         )
+        st.write(
+            'Für eine mittlere Rückzahlung (bspw. bei Staffelung) den Anteil auf 100 '
+            'und die Rückzahlung auf das geschätzte Mittel setzen.'
+        )
     # Sparen
     with st.expander("Anlage der Ersparnis"):
         cols_sparen = st.columns(2)
