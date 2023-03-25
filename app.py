@@ -287,6 +287,11 @@ y_sparkonto = get_sparkonto(y_pkv, y_gkv)
 
 # Anzeige des Plots
 st.subheader('Beiträge')
+st.write(
+    'Bis zur Rente bezahlt der Arbeitgeber die Hälfte der Beiträge, auch für Kinder. '
+    f'Die Rente ist mit {steuersatz_rente:.0f} % versteuert (siehe Sonstiges).'
+)
+
 fig = go.Figure(
     layout=dict(
         xaxis_title="Alter",
@@ -310,14 +315,16 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
+
 # Anzeige des Ersparten
-st.subheader(f'Verlauf des Sparkontos bei PKV-Vertrag ({sparrendite:.1f} % Verzinsung)')
+st.subheader(
+    f'Verlauf des Sparkontos bei PKV-Vertrag ({sparrendite:.1f} % Verzinsung)',
+)
 st.write(
     'Unter der Annahme, dass man die Differenz zwischen GKV- und PKV-Beitrag anlegt, '
     'falls der PKV-Beitrag niedriger ist und die Differenz aus dem Sparkonto '
     'bezahlt, falls der PKV-Beitrag höher ist.'
 )
-
 
 fig = go.Figure(
     layout=dict(
@@ -338,7 +345,7 @@ fig.add_shape(
 )
 fig.update_layout(
     width=1000,
-    height=400,
+    height=500,
     margin=dict(l=20, r=20, t=40, b=20),
     legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
 )
