@@ -249,6 +249,9 @@ x = np.arange(alter_start, berechnung_bis + 1, 1)
 y_gkv, hinweise_gkv = get_gkv_beitrag(x)
 y_pkv, hinweise_pkv = get_pkv_beitrag(x)
 
+x_rente = np.arange(rente_ab, berechnung_bis + 1, 1)
+y_rente = [get_rente(_) for _ in x_rente]
+
 # p = figure(
 #     title="Beitragsverlauf",
 #     x_axis_label='Alter',
@@ -274,6 +277,7 @@ fig = go.Figure(
 )
 fig.add_scatter(x=x, y=y_gkv, mode='lines', name='GKV')
 fig.add_scatter(x=x, y=y_pkv, mode='lines', name='PKV')
+fig.add_scatter(x=x_rente, y=y_rente, mode='lines', name='Rente')
 fig.update_layout(
     width=1000,
     height=600,
