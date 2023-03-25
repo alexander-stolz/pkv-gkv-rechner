@@ -16,7 +16,7 @@ with st.sidebar:
     # Alter
     cols_alter = st.columns(2)
     alter_start = cols_alter[0].number_input(
-        'Alter', min_value=18, max_value=100, value=35
+        'Alter', min_value=18, max_value=100, value=38
     )
     rente_ab = cols_alter[1].number_input(
         'Rentenalter', min_value=18, max_value=100, value=67
@@ -119,6 +119,10 @@ with st.sidebar:
             max_value=100,
             value=25,
         )
+    with st.expander("Sonstiges"):
+        berechnung_bis = st.number_input(
+            'Berechnung bis Alter', min_value=18, max_value=150, value=100
+        )
 
 
 def get_gkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
@@ -180,7 +184,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
 
 st.title("Simulierter Beitragsverlauf")
 
-x = np.arange(alter_start, 100, 1)
+x = np.arange(alter_start, berechnung_bis + 1, 1)
 y_gkv = get_gkv_beitrag(x)
 y_pkv = get_pkv_beitrag(x)
 
