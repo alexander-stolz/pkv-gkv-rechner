@@ -31,8 +31,18 @@ with st.sidebar:
     gkv_beitrag = cols_beitrag[1].number_input(
         'GKV-Betrag bei Eintritt', min_value=150, max_value=2500, value=990
     )
-    rente = st.number_input(
-        'Geschätzte Rente bei Renteneintritt', min_value=0, max_value=10000, value=2000
+
+    cols_rente = st.columns(2)
+    rente = cols_rente[0].number_input(
+        'Regelaltersrente', min_value=0, max_value=10000, value=2000
+    )
+    rentenanpassung = cols_rente[1].number_input(
+        'Rentenanpassung (%)',
+        min_value=0.0,
+        max_value=25.0,
+        value=1.5,
+        step=0.1,
+        format="%.1f",
     )
 
     with st.expander("Kinder"):
@@ -126,12 +136,19 @@ with st.sidebar:
         )
 
 
+def get_rente(alter: int) -> float:
+    if alter >= rente_ab:
+        return rente * (1 + rentenanpassung / 100) ** (alter - alter_start)
+    else:
+        return 0
+
+
 def get_gkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
     hinweise = []
     y_beitrag = np.zeros_like(x_alter)
     for i, a in enumerate(x_alter):
-        if a >= 67:
-            beitrag = rente * (0.146 / 2 + 0.0305) * 1.03 ** (a - rente_ab)
+        if a >= rente_ab:
+            beitrag = get_rente(a) * (0.146 / 2 + 0.0305)
         else:
             beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i
         y_beitrag[i] = beitrag
@@ -179,7 +196,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 + pkv_fix
             )
             beitrag *= 1 - faktor_rueckstellung / 100
-            kosten -= entlastung_pkv + rente * 1.03 ** (a - rente_ab) * 0.146 / 2
+            kosten -= entlastung_pkv + get_rente(a) * 0.146 / 2
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
                 f'zwischen {rente_ab} - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
@@ -195,7 +212,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 + pkv_fix
             )
             beitrag *= 1 - faktor_rueckstellung / 100
-            kosten -= entlastung_pkv + rente * 1.03 ** (a - rente_ab) * 0.146 / 2
+            kosten -= entlastung_pkv + get_rente(a) * 0.146 / 2
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € '
                 f'zu {anpassung_pkv_80:.1f} % ab 80. Ohne Anpassung: {pkv_fix:.0f} € '
@@ -238,10 +255,14 @@ st.bokeh_chart(p)
 
 st.subheader(f'Summe aller Beiträge bis zum {berechnung_bis}. Lebensjahr')
 
-df = pd.DataFrame(
-    data=[['PKV', y_pkv.sum()], ['GKV', y_gkv.sum()]],
-    columns=["Versicherung", "Summe aller Beiträge"],
-).round(2)
+df = (
+    pd.DataFrame(
+        data=[['PKV', y_pkv.sum()], ['GKV', y_gkv.sum()]],
+        columns=["Versicherung", "Summe aller Beiträge"],
+    )
+    .round(2)
+    .style.hide(axis='index')
+)
 
 # Anzeigen des DataFrames in Streamlit
 st.table(df)
