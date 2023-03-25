@@ -1,3 +1,4 @@
+from typing import OrderedDict, Tuple
 import streamlit as st
 from bokeh.plotting import figure
 import numpy as np
@@ -106,15 +107,15 @@ with st.sidebar:
         entlastung_pkv = st.number_input(
             'PKV-Entlastungen ab Rente (€)', min_value=0, max_value=1000, value=235 + 31
         )
-        rueckzahlung_beitragsfrei = st.number_input(
+        rueckzahlung_leistungsfrei = st.number_input(
             'Rückzahlung bei Leistungsfreiheit (%)',
             min_value=0.0,
             max_value=100.0,
             value=2.5 / 12 * 100,
             step=1.0,
         )
-        anteil_beitragsfrei = st.number_input(
-            'Anteil der beitragsfreien Jahre (%)',
+        anteil_leistungsfrei = st.number_input(
+            'Anteil der leistungsfreien Jahre (%)',
             min_value=0,
             max_value=100,
             value=25,
@@ -125,7 +126,8 @@ with st.sidebar:
         )
 
 
-def get_gkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
+def get_gkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
+    hinweise = []
     y_beitrag = np.zeros_like(x_alter)
     for i, a in enumerate(x_alter):
         if a >= 67:
@@ -133,10 +135,11 @@ def get_gkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
         else:
             beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i
         y_beitrag[i] = beitrag
-    return y_beitrag
+    return y_beitrag, hinweise
 
 
-def get_pkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
+def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
+    hinweise = []
     y_beitrag = np.zeros_like(x_alter)
     pkv_dynamisch = pkv_beitrag - von_anpassung_ausgeschlossen_pkv
     pkv_fix = von_anpassung_ausgeschlossen_pkv
@@ -147,15 +150,26 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
             if a < rente_ab:
                 # AG übernimmt die Hälfte
                 kosten_kinder /= 2
+                hinweise.append('Kinderbeitrag (AG übernimmt die Hälfte)')
+            else:
+                hinweise.append('Kinderbeitrag in Rente (AG übernimmt nicht)')
             kosten += kosten_kinder
         if a < 60:
             beitrag = pkv_dynamisch * (1 + anpassung_pkv / 100) ** i + pkv_fix
+            hinweise.append(
+                f'Anpassung bis 60 Jahre von {pkv_dynamisch:.2f} € '
+                f'zu {anpassung_pkv:.1f} %. Fix: {pkv_fix:.2f} €'
+            )
         elif 60 <= a < rente_ab:
             beitrag = (
                 pkv_dynamisch
                 * (1 + anpassung_pkv / 100) ** (60 - alter_start)
                 * (1 + anpassung_pkv_60 / 100) ** (a - 60)
                 + pkv_fix
+            )
+            hinweise.append(
+                f'Anpassung zwischen 60 - {rente_ab} von {pkv_dynamisch:.2f} € '
+                f'zu {anpassung_pkv_60:.1f} %. Fix: {pkv_fix:.2f} €'
             )
         elif rente_ab <= a < 80:
             beitrag = (
@@ -166,6 +180,12 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
             )
             beitrag *= 1 - faktor_rueckstellung / 100
             kosten -= entlastung_pkv + rente * 1.03 ** (a - rente_ab) * 0.146 / 2
+            hinweise.append(
+                f'Anpassung zwischen {rente_ab} - 80 von {pkv_dynamisch:.2f} € '
+                f'zu {anpassung_pkv_60:.1f} %. Fix: {pkv_fix:.2f} € '
+                f'reduziert um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
+                f'{entlastung_pkv:.2f} € (Entlastung PKV) und 7.3 % von der Rente'
+            )
         elif a >= 80:
             beitrag = (
                 pkv_dynamisch
@@ -176,17 +196,31 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> np.ndarray:
             )
             beitrag *= 1 - faktor_rueckstellung / 100
             kosten -= entlastung_pkv + rente * 1.03 ** (a - rente_ab) * 0.146 / 2
+            hinweise.append(
+                f'Anpassung ab 80 von {pkv_dynamisch:.2f} € '
+                f'zu {anpassung_pkv_80:.1f} %. Fix: {pkv_fix:.2f} € '
+                f'reduziert um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
+                f'{entlastung_pkv:.2f} € (Entlastung PKV) und 7.3 % von der Rente'
+            )
 
-        kosten -= beitrag * rueckzahlung_beitragsfrei / 100 * anteil_beitragsfrei / 100
+        rel_rueckzahlung_leistungsfrei = (
+            rueckzahlung_leistungsfrei / 100 * anteil_leistungsfrei / 100
+        )
+        kosten -= beitrag * rel_rueckzahlung_leistungsfrei
         y_beitrag[i] = beitrag + kosten
-    return y_beitrag
+    hinweise.append(
+        f'Alle Beiträge reduziert um {rel_rueckzahlung_leistungsfrei * 100: .1f} % '
+        '(mittlere Rückzahlung bei Leistungsfreiheit)'
+    )
+    hinweise = OrderedDict.fromkeys(hinweise)
+    return y_beitrag, hinweise
 
 
 st.title("Simulierter Beitragsverlauf")
 
 x = np.arange(alter_start, berechnung_bis + 1, 1)
-y_gkv = get_gkv_beitrag(x)
-y_pkv = get_pkv_beitrag(x)
+y_gkv, hinweise_gkv = get_gkv_beitrag(x)
+y_pkv, hinweise_pkv = get_pkv_beitrag(x)
 
 p = figure(
     title="Beitragsverlauf",
@@ -210,4 +244,13 @@ df = pd.DataFrame(
 ).round(2)
 
 # Anzeigen des DataFrames in Streamlit
-st.table(df.style.hide_index())
+st.table(df)
+
+# Anzeigen der Hinweise
+
+st.subheader('Hinweise')
+df_hinweise = pd.DataFrame(
+    data=list(hinweise_pkv),
+    columns=["Hinweise PKV"],
+)
+st.table(df_hinweise)
