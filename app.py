@@ -204,7 +204,8 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
                 f'zwischen {rente_ab} - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
-                f'Reduzierung um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
+                f'Reduzierung um {faktor_rueckstellung:.1f} % '
+                '(Beitrag Rückstellung entfällt), '
                 f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
             )
         elif a >= 80:
@@ -220,7 +221,8 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € '
                 f'zu {anpassung_pkv_80:.1f} % ab 80. Ohne Anpassung: {pkv_fix:.0f} € '
-                f'Reduzierung um {faktor_rueckstellung:.1f} % (Beitrag Rückstellung), '
+                f'Reduzierung um {faktor_rueckstellung:.1f} % '
+                '(Beitrag Rückstellung entfällt), '
                 f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
             )
 
