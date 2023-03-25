@@ -198,7 +198,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
         if a < 60:
             beitrag = (pkv_dynamisch * (1 + anpassung_pkv / 100) ** i + pkv_fix) / 2
             hinweise.append(
-                f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv:.1f} % '
+                f'Anpassung von {pkv_dynamisch:.0f} € zu jährlich {anpassung_pkv:.1f} % '
                 f'bis 60 Jahre. Ohne Anpassung: {pkv_fix:.0f} €. AG übernimmt die Hälfte.'
             )
         elif 60 <= a < 67:
@@ -209,7 +209,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 + pkv_fix
             )
             hinweise.append(
-                f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
+                f'Anpassung von {pkv_dynamisch:.0f} € zu jährlich {anpassung_pkv_60:.1f} % '
                 f'zwischen 60 - 67 Jahre. Ohne Anpassung: {pkv_fix:.0f} €.'
             )
             if a < rente_ab:
@@ -226,7 +226,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             beitrag *= 1 - faktor_rueckstellung / 100
             kosten -= entlastung_pkv + get_rente(a) * 0.146 / 2
             hinweise.append(
-                f'Anpassung von {pkv_dynamisch:.0f} € zu {anpassung_pkv_60:.1f} % '
+                f'Anpassung von {pkv_dynamisch:.0f} € zu jährlich {anpassung_pkv_60:.1f} % '
                 f'zwischen 67 - 80. Ohne Anpassung: {pkv_fix:.0f} €. '
                 f'Reduzierung um {faktor_rueckstellung:.1f} % '
                 '(Beitrag Rückstellung entfällt), '
@@ -244,7 +244,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             kosten -= entlastung_pkv + get_rente(a) * 0.146 / 2
             hinweise.append(
                 f'Anpassung von {pkv_dynamisch:.0f} € '
-                f'zu {anpassung_pkv_80:.1f} % ab 80. Ohne Anpassung: {pkv_fix:.0f} € '
+                f'zu jährlich {anpassung_pkv_80:.1f} % ab 80. Ohne Anpassung: {pkv_fix:.0f} € '
                 f'Reduzierung um {faktor_rueckstellung:.1f} % '
                 '(Beitrag Rückstellung entfällt), '
                 f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
@@ -295,7 +295,7 @@ st.write(
 fig = go.Figure(
     layout=dict(
         xaxis_title="Alter",
-        yaxis_title="Netto-Betrag (€)",
+        yaxis_title="Netto-Beträge (€)",
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
     )
 )
