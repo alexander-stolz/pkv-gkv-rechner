@@ -1,4 +1,4 @@
-from typing import OrderedDict, Tuple
+from typing import List, OrderedDict, Tuple
 import streamlit as st
 
 # from bokeh.plotting import figure
@@ -47,6 +47,10 @@ with st.sidebar:
         value=1.5,
         step=0.1,
         format="%.1f",
+    )
+
+    arbeit_bis = st.number_input(
+        'Berufstätig bis Alter', min_value=18, max_value=rente_ab, value=67
     )
 
     with st.expander("Kinder"):
@@ -134,6 +138,16 @@ with st.sidebar:
             max_value=100,
             value=25,
         )
+    # Sparen
+    with st.expander("Anlage der Ersparnis"):
+        cols_sparen = st.columns(2)
+        sparquote = cols_sparen[0].number_input(
+            'Sparquote (%)', min_value=0, max_value=100, value=100, step=5
+        )
+        sparrendite = cols_sparen[1].number_input(
+            'Verzinsung (%)', min_value=0.0, max_value=50.0, value=0.0, step=0.5
+        )
+
     with st.expander("Sonstiges"):
         berechnung_bis = st.number_input(
             'Berechnung bis Alter', min_value=18, max_value=150, value=100
@@ -151,10 +165,12 @@ def get_gkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
     hinweise = []
     y_beitrag = np.zeros_like(x_alter)
     for i, a in enumerate(x_alter):
-        if a >= rente_ab:
-            beitrag = get_rente(a) * (0.146 / 2 + 0.0305)
-        else:
+        if a < arbeit_bis:
             beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i
+        elif arbeit_bis <= a < rente_ab:
+            beitrag = 0
+        elif a >= rente_ab:
+            beitrag = get_rente(a) * (0.146 / 2 + 0.0305)
         y_beitrag[i] = beitrag
     return y_beitrag, hinweise
 
@@ -243,7 +259,19 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
     return y_beitrag, hinweise
 
 
-st.title("Simulierter Beitragsverlauf")
+def get_sparkonto(beitraege, beitraege_vgl) -> List[float]:
+    gespart = [0]
+    for i in range(len(beitraege)):
+        gespart.append(gespart[-1])
+        gespart[-1] *= 1 + sparrendite / 100
+        if beitraege[i] < beitraege_vgl[i]:
+            gespart[-1] += (beitraege_vgl[i] - beitraege[i]) * 12 * sparquote / 100
+        else:
+            gespart[-1] -= (beitraege[i] - beitraege_vgl[i]) * 12
+    return gespart
+
+
+st.title("Simulierter Verlauf")
 
 x = np.arange(alter_start, berechnung_bis + 1, 1)
 y_gkv, hinweise_gkv = get_gkv_beitrag(x)
@@ -251,25 +279,12 @@ y_pkv, hinweise_pkv = get_pkv_beitrag(x)
 
 x_rente = np.arange(rente_ab, berechnung_bis + 1, 1)
 y_rente = [get_rente(_) for _ in x_rente]
+y_sparkonto = get_sparkonto(y_pkv, y_gkv)
 
-# p = figure(
-#     title="Beitragsverlauf",
-#     x_axis_label='Alter',
-#     y_axis_label='Beitrag (€)',
-#     plot_width=1000,
-#     plot_height=600,
-#     sizing_mode='stretch_width',
-#     toolbar_location=None,
-#     tools="",
-# )
-# p.line(x, y_gkv, line_width=2, color='#1f77b4', legend_label="GKV")
-# p.line(x, y_pkv, line_width=2, color="green", legend_label="PKV")
-# st.bokeh_chart(p)
-
-# use plotly express
+# Anzeige des Plots
+st.subheader('Beiträge')
 fig = go.Figure(
     layout=dict(
-        # title=dict(text="Beitragsverlauf", x=0.5),
         xaxis_title="Alter",
         yaxis_title="Beitrag (€)",
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
@@ -286,22 +301,26 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-st.subheader(f'Summe aller Beiträge bis zum {berechnung_bis}. Lebensjahr')
-
-df = (
-    pd.DataFrame(
-        data=[['PKV', y_pkv.sum() * 12], ['GKV', y_gkv.sum() * 12]],
-        columns=["Versicherung", "Summe aller Beiträge"],
+# Anzeige des Ersparten
+st.subheader('Verlauf des Sparkontos bei PKV-Vertrag')
+fig = go.Figure(
+    layout=dict(
+        xaxis_title="Alter",
+        yaxis_title="Sparkonto (€)",
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
     )
-    .round(2)
-    .style.hide(axis='index')
 )
+fig.add_scatter(x=x, y=y_sparkonto, mode='lines', name='Sparkonto')
+fig.update_layout(
+    width=1000,
+    height=400,
+    margin=dict(l=20, r=20, t=40, b=20),
+    legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+)
+st.plotly_chart(fig, use_container_width=True)
 
-# Anzeigen des DataFrames in Streamlit
-st.table(df)
 
 # Anzeigen der Hinweise
-
 st.subheader('Hinweise')
 df_hinweise = pd.DataFrame(
     data=list(hinweise_pkv),
