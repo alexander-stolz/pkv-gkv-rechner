@@ -323,8 +323,8 @@ y_sparkonto = get_sparkonto(y_pkv, y_gkv)
 st.subheader('Beiträge')
 st.write(
     'Bis zur Rente bezahlt der Arbeitgeber die Hälfte der Beiträge, auch für Kinder. '
-    f'Die Rente ist mit {steuersatz_rente:.0f} % versteuert (siehe Sonstiges). '
-    'Über die Legende kann die Rente eingeblendet werden.'
+    'Über die Legende kann die Rente eingeblendet werden. '
+    f'Sie ist mit {steuersatz_rente:.0f} % (Einstellungen/Sonstiges) versteuert.'
 )
 
 fig = go.Figure(
@@ -390,9 +390,9 @@ st.plotly_chart(fig, use_container_width=True)
 
 
 # Anzeigen der Hinweise
-st.subheader('Hinweise')
+st.subheader('Hinweise zur Berechnung')
 df_hinweise = pd.DataFrame(
     data=list(hinweise_pkv),
-    columns=["Hinweise PKV"],
+    columns=["Hinweise zur PKV"],
 )
 st.table(df_hinweise)
