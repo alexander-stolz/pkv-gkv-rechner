@@ -236,7 +236,7 @@ p.line(x, y_gkv, line_width=2, color='#1f77b4', legend_label="GKV")
 p.line(x, y_pkv, line_width=2, color="green", legend_label="PKV")
 st.bokeh_chart(p)
 
-st.subheader('Zusammenfassung')
+st.subheader(f'Summe aller Beiträge bis zum {berechnung_bis}. Lebensjahr')
 
 df = pd.DataFrame(
     data=[['PKV', y_pkv.sum()], ['GKV', y_gkv.sum()]],
