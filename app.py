@@ -15,6 +15,23 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+footer = """<style>
+.footer {
+  position: fixed;
+  bottom: 10px;
+  color: #999;
+}
+
+a:link , a:visited {
+  color: #999;
+}
+</style>
+
+<div class="footer">
+    Open Source, Alexander Stolz
+</div>
+"""
+
 with st.sidebar:
     st.title("Einstellungen")
 
@@ -166,6 +183,8 @@ with st.sidebar:
         steuersatz_rente = st.number_input(
             'Steuersatz bei Rente (%)', min_value=0, max_value=45, value=35
         )
+
+    st.markdown(footer, unsafe_allow_html=True)
 
 
 def get_rente(alter: int) -> float:
