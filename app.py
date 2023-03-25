@@ -167,9 +167,13 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             if a < rente_ab:
                 # AG übernimmt die Hälfte
                 kosten_kinder /= 2
-                hinweise.append('Kinderbeitrag (AG übernimmt die Hälfte)')
+                hinweise.append(
+                    f'Kinderbeitrag {kosten_kinder} € (AG übernimmt die Hälfte)'
+                )
             else:
-                hinweise.append('Kinderbeitrag in Rente (AG übernimmt nicht)')
+                hinweise.append(
+                    f'Kinderbeitrag in Rente {kosten_kinder} € (AG übernimmt nicht)'
+                )
             kosten += kosten_kinder
         if a < 60:
             beitrag = pkv_dynamisch * (1 + anpassung_pkv / 100) ** i + pkv_fix
@@ -257,7 +261,7 @@ st.subheader(f'Summe aller Beiträge bis zum {berechnung_bis}. Lebensjahr')
 
 df = (
     pd.DataFrame(
-        data=[['PKV', y_pkv.sum()], ['GKV', y_gkv.sum()]],
+        data=[['PKV', y_pkv.sum() * 12], ['GKV', y_gkv.sum() * 12]],
         columns=["Versicherung", "Summe aller Beiträge"],
     )
     .round(2)
