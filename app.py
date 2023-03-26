@@ -1,16 +1,18 @@
+"Vergleich PKV vs. GKV, `streamlit run app.py`"
+
 from typing import List, OrderedDict, Tuple
 import streamlit as st
 
-# from bokeh.plotting import figure
-# use plotly for plotting
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
+__author__ = 'Alexander Stolz'
+__email__ = 'amstolz@gmail.com'
+__updated__ = '(ast) 2023-03-26 @ 01:12'
 
 st.set_page_config(
     page_title="PKV vs GKV",
-    # page_icon=':chart_with_upwards_trend:',
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -342,7 +344,6 @@ fig.add_scatter(
     y=y_rente,
     mode='lines',
     name=f'Netto-Rente (Steuersatz {steuersatz_rente} %)',
-    # hide by default
     visible='legendonly',
 )
 fig.update_layout(
@@ -372,7 +373,6 @@ fig = go.Figure(
     )
 )
 fig.add_scatter(x=x, y=y_sparkonto, mode='lines', name='Sparkonto')
-# Add solid line at 0
 fig.add_shape(
     type="line",
     x0=alter_start,
@@ -388,7 +388,6 @@ fig.update_layout(
     legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
 )
 st.plotly_chart(fig, use_container_width=True)
-
 
 # Anzeigen der Hinweise
 st.subheader('Hinweise zur Berechnung')
