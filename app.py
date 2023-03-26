@@ -9,7 +9,7 @@ import pandas as pd
 
 __author__ = 'Alexander Stolz'
 __email__ = 'amstolz@gmail.com'
-__updated__ = '(ast) 2023-03-26 @ 10:11'
+__updated__ = '(ast) 2023-03-26 @ 10:18'
 
 st.set_page_config(
     page_title="PKV vs GKV",
@@ -21,7 +21,7 @@ footer = """<style>
 .footer {
   position: fixed;
   bottom: 10px;
-  color: #999;
+  color: #888;
 }
 
 a:link , a:visited {
@@ -32,7 +32,7 @@ a:link , a:visited {
 
 <div class="footer">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-        <path color="#999" d="M16 13V5H6v8a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2zM5 3h15a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V4a1 1 0 0 1 1-1zm13 2v3h2V5h-2zM2 19h18v1H2v-2z"/>
+        <path color="#999" d="M16 13V5H6v8a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2zM5 3h15a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V4a1 1 0 0 1 1-1zm13 2v3h2V5h-2zM2 19h18v1H2v-2z" style="fill:#7b7b7b;fill-opacity:0.4"/>
     </svg>
     &gt;_ Alexander Stolz
     <!-- <a href="mailto:amstolz@gmail.com">Kontakt</a> -->
