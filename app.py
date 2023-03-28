@@ -9,7 +9,7 @@ import pandas as pd
 
 __author__ = 'Alexander Stolz'
 __email__ = 'amstolz@gmail.com'
-__updated__ = '(ast) 2023-03-26 @ 10:18'
+__updated__ = '(ast) 2023-03-28 @ 19:42'
 
 st.set_page_config(
     page_title="PKV vs GKV",
@@ -81,7 +81,10 @@ with st.sidebar:
             value=0,
         )
         kinder_ab = st.number_input(
-            'Kinder ab Alter', min_value=alter_start, max_value=67, value=40
+            'Kinder ab Alter',
+            min_value=alter_start,
+            max_value=67,
+            value=max(40, alter_start + 2),
         )
         kinder_versichert_bis = st.number_input(
             'Kinder in PKV bis Alter', min_value=18, max_value=30, value=25
