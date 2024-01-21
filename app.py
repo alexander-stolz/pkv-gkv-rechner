@@ -9,7 +9,7 @@ import pandas as pd
 
 __author__ = 'Alexander Stolz'
 __email__ = 'amstolz@gmail.com'
-__updated__ = '(ast) 2024-01-21 @ 14:57'
+__updated__ = '(ast) 2024-01-21 @ 15:47'
 
 
 st.set_page_config(
@@ -135,7 +135,7 @@ with st.sidebar:
             'Von PKV-Anpassung unbeteiliger Betrag',
             min_value=0,
             max_value=pkv_beitrag,
-            value=63 + 50 + 3 + 22,
+            value=28 + 80,  # 63 + 50 + 3 + 22,
         )
 
         st.write(
@@ -146,11 +146,15 @@ with st.sidebar:
 
     with st.expander("Rückstellungen / Rückzahlungen"):
         entlastung_pkv = st.number_input(
-            'PKV-Entlastungen ab Rente (€)', min_value=0, max_value=1000, value=235 + 31
+            'PKV-Entlastungen ab Rente (€)',
+            min_value=0,
+            max_value=1000,
+            value=230 + 28 + 80,
         )
         st.write(
             'Das ist bspw. der Wegfall des Krankentagegeldes oder die '
-            'Beitragsermäßigung im Alter (Altersentlastung + Wegfall des AN-Anteils).'
+            'Beitragsermäßigung im Alter '
+            '(Altersentlastung + Wegfall des Rückstellungsbeitrags).'
         )
         rueckzahlung_leistungsfrei_prz = st.number_input(
             'Rückzahlung bei Leistungsfreiheit (%)',
