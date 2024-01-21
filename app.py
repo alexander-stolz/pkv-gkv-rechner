@@ -9,7 +9,7 @@ import pandas as pd
 
 __author__ = 'Alexander Stolz'
 __email__ = 'amstolz@gmail.com'
-__updated__ = '(ast) 2024-01-21 @ 17:16'
+__updated__ = '(ast) 2024-01-21 @ 17:21'
 
 
 st.set_page_config(
@@ -379,23 +379,26 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 + abs_rueckzahlung_leistungsfrei
             ) * (1 - steuersatz / 100)
             kosten -= rueckzahlung
-            hinweise.append(
-                f'Mittlere Rückzahlung bei Leistungsfreiheit: '
-                f'dynamisch: {rel_rueckzahlung_leistungsfrei * 100: .1f} %, '
-                f'fix: {abs_rueckzahlung_leistungsfrei:.0f} €. '
-                f'Nach Steuern: {rueckzahlung:.0f} €.'
-            )
         else:
             kosten -= (
                 beitrag * rel_rueckzahlung_leistungsfrei
                 + abs_rueckzahlung_leistungsfrei
             )
-            hinweise.append(
-                f'Mittlere Rückzahlung bei Leistungsfreiheit: '
-                f'dynamisch: {rel_rueckzahlung_leistungsfrei * 100: .1f} %, '
-                f'fix: {abs_rueckzahlung_leistungsfrei:.0f} €.'
-            )
         y_beitrag[i] = beitrag + kosten
+    if steuer_beruecksichtigen:
+        hinweise.append(
+            f'Mittlere Rückzahlung bei Leistungsfreiheit: '
+            f'dynamisch: {rel_rueckzahlung_leistungsfrei * 100: .1f} %, '
+            f'fix: {abs_rueckzahlung_leistungsfrei:.0f} €. '
+            f'Abzüglich Steuern.'
+        )
+    else:
+        hinweise.append(
+            f'Mittlere Rückzahlung bei Leistungsfreiheit: '
+            f'dynamisch: {rel_rueckzahlung_leistungsfrei * 100: .1f} %, '
+            f'fix: {abs_rueckzahlung_leistungsfrei:.0f} €. '
+            'Steuern nicht berücksichtigt.'
+        )
     hinweise = OrderedDict.fromkeys(hinweise)
     return y_beitrag, hinweise
 
