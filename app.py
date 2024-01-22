@@ -9,7 +9,7 @@ import pandas as pd
 
 __author__ = 'Alexander Stolz'
 __email__ = 'amstolz@gmail.com'
-__updated__ = '(ast) 2024-01-21 @ 17:21'
+__updated__ = '(ast) 2024-01-22 @ 16:19'
 
 
 st.set_page_config(
@@ -75,6 +75,12 @@ with st.sidebar:
     )
 
     with st.expander("Kinder"):
+        kinder_anzahl_start = st.number_input(
+            'Anzahl Kinder aktuell',
+            min_value=0,
+            max_value=10,
+            value=0,
+        )
         kinder_anzahl = st.number_input(
             'Geplante Anzahl Kinder (PKV versichert)',
             min_value=0,
@@ -106,7 +112,7 @@ with st.sidebar:
             format="%.1f",
         )
         anpassung_gkv = cols_anpassung[1].number_input(
-            'GKV Anpassung (%)',
+            'GKV Anpassung JAEG (%)',
             min_value=0.0,
             max_value=25.0,
             value=3.0,
@@ -245,15 +251,25 @@ with st.sidebar:
         beitragssatz_gkv = st.number_input(
             'Beitragssatz GKV (%)', min_value=0.0, max_value=100.0, value=14.6
         )
-        # Allgemeiner Beitragssatz Pflegeversicherung seit 01.07.2023: 3,4 %
-        beitragssatz_pflegeversicherung = st.number_input(
-            'Beitragssatz Pflegeversicherung (%)',
-            min_value=0.0,
-            max_value=100.0,
-            value=3.4,
-        )
+        # # Allgemeiner Beitragssatz Pflegeversicherung seit 01.07.2023: 3,4 %
+        # beitragssatz_pflegeversicherung = st.number_input(
+        #     'Beitragssatz Pflegeversicherung (%)',
+        #     min_value=0.0,
+        #     max_value=100.0,
+        #     value=3.4,
+        # )
 
     st.markdown(footer, unsafe_allow_html=True)
+
+
+def get_kinder(alter: int, nur_versichert: bool = False) -> int:
+    if nur_versichert:
+        if kinder_ab <= alter <= kinder_ab + kinder_versichert_bis:
+            return kinder_anzahl + kinder_anzahl_start
+        return kinder_anzahl_start
+    if kinder_ab <= alter:
+        return kinder_anzahl + kinder_anzahl_start
+    return kinder_anzahl_start
 
 
 def get_rente(alter: int) -> float:
@@ -269,16 +285,57 @@ def get_rente(alter: int) -> float:
 def get_gkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
     hinweise = []
     y_beitrag = np.zeros_like(x_alter)
+
+    # {Kinder: (Gesamt, Arbeitnehmer)}
+    pflegeversicherung_satz_by_kinder = {
+        0: (3.4 + 0.6, 2.3),
+        1: (3.4, 1.7),
+        2: (3.15, 1.45),
+        3: (2.9, 1.2),
+        4: (2.65, 0.95),
+        5: (2.4, 0.7),
+    }
+
+    satz_pflege_start = pflegeversicherung_satz_by_kinder[
+        min(get_kinder(alter_start), 5)
+    ]
+
     for i, a in enumerate(x_alter):
-        if a < rente_ab:
-            beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i / 2
-        elif a >= rente_ab:
-            beitrag = get_rente(a) * (
-                beitragssatz_gkv / 100 / 2 + beitragssatz_pflegeversicherung / 100
+        kinder = min(get_kinder(a), 5)
+        satz_pflege = pflegeversicherung_satz_by_kinder.get(kinder)
+        if i == 0:
+            hinweise.append(
+                f'GKV-Beitrag: {beitragssatz_gkv / 2:.1f} % vom Brutto zzgl. '
+                f'{satz_pflege[1]:.1f} % Pflegeversicherung ({kinder} Kinder).'
             )
+        if kinder > 0 and a == kinder_ab:
+            hinweise.append(
+                f'GKV-Beitrag: {beitragssatz_gkv / 2:.1f} % vom Brutto zzgl. '
+                f'{satz_pflege[1]:.1f} % Pflegeversicherung ({kinder} Kinder).'
+            )
+        if a < rente_ab:
+            # Beitrag komplett
+            beitrag = gkv_beitrag * (1 + anpassung_gkv / 100) ** i
+            # Beitrag komplett ohne Pflege
+            beitrag_ohne_pflege = beitrag - beitrag * (
+                1 - beitragssatz_gkv / (beitragssatz_gkv + satz_pflege_start[0])
+            )
+            # Beitrag Pflege Arbeitnehmeranteil
+            beitrag_pflege_an = beitrag * (
+                1 - beitragssatz_gkv / (beitragssatz_gkv + satz_pflege[1])
+            )
+            beitrag = beitrag_ohne_pflege / 2 + beitrag_pflege_an
+
+        elif a >= rente_ab:
+            beitrag = get_rente(a) * (beitragssatz_gkv / 100 / 2 + satz_pflege[0] / 100)
         y_beitrag[i] = beitrag
         if a == rente_ab:
-            hinweise.append(f'Bruttorente bei Renteneintritt: {get_rente(a):.0f} €')
+            hinweise.append(
+                f'Bruttorente bei Renteneintritt: {get_rente(a):.0f} €. '
+                'Ab diesem Zeitpunkt beträgt der '
+                f'GKV-Beitrag {beitragssatz_gkv / 2:.1f} % von der Rente zzgl. '
+                f'{satz_pflege[0]:.1f} % Pflegeversicherung ({kinder} Kinder).'
+            )
     return y_beitrag, hinweise
 
 
@@ -516,8 +573,15 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Anzeigen der Hinweise
 st.subheader('Hinweise zur Berechnung')
-df_hinweise = pd.DataFrame(
-    data=list(hinweise_gkv) + list(hinweise_pkv),
-    columns=["Hinweise zur PKV"],
+st.table(
+    pd.DataFrame(
+        data=list(hinweise_gkv),
+        columns=["Hinweise zur GKV"],
+    )
 )
-st.table(df_hinweise)
+st.table(
+    pd.DataFrame(
+        data=list(hinweise_pkv),
+        columns=["Hinweise zur PKV"],
+    )
+)
