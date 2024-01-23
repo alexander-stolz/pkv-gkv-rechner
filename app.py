@@ -9,7 +9,7 @@ import pandas as pd
 
 __author__ = 'Alexander Stolz'
 __email__ = 'amstolz@gmail.com'
-__updated__ = '(ast) 2024-01-22 @ 16:19'
+__updated__ = '(ast) 2024-01-23 @ 02:24'
 
 
 st.set_page_config(
@@ -60,6 +60,9 @@ with st.sidebar:
     gkv_beitrag = cols_beitrag[1].number_input(
         'GKV-Betrag bei Eintritt', min_value=150, max_value=2500, value=1070
     )
+    pkv_eigenanteil = st.number_input(
+        'Eigenanteil PKV (€ / Jahr)', min_value=0, max_value=5000, value=480
+    )
 
     cols_rente = st.columns(2)
     rente = cols_rente[0].number_input(
@@ -102,8 +105,7 @@ with st.sidebar:
 
     with st.expander("Beitragsanpassung"):
         # Anpassung
-        cols_anpassung = st.columns(2)
-        anpassung_pkv = cols_anpassung[0].number_input(
+        anpassung_pkv = st.number_input(
             'PKV Anpassung (%)',
             min_value=0.0,
             max_value=25.0,
@@ -111,16 +113,7 @@ with st.sidebar:
             step=0.1,
             format="%.1f",
         )
-        anpassung_gkv = cols_anpassung[1].number_input(
-            'GKV Anpassung JAEG (%)',
-            min_value=0.0,
-            max_value=25.0,
-            value=3.0,
-            step=0.1,
-            format="%.1f",
-        )
-        cols_anpassung_60 = st.columns(2)
-        anpassung_pkv_60 = cols_anpassung_60[0].number_input(
+        anpassung_pkv_60 = st.number_input(
             'PKV Anpassung ab 60 (%)',
             min_value=0.0,
             max_value=25.0,
@@ -128,7 +121,7 @@ with st.sidebar:
             step=0.1,
             format="%.1f",
         )
-        anpassung_pkv_80 = cols_anpassung_60[1].number_input(
+        anpassung_pkv_80 = st.number_input(
             'PKV Anpassung ab 80 (%)',
             min_value=0.0,
             max_value=25.0,
@@ -136,7 +129,14 @@ with st.sidebar:
             step=0.1,
             format="%.1f",
         )
-
+        anpassung_gkv = st.number_input(
+            'GKV JAEG Anpassung (%)',
+            min_value=0.0,
+            max_value=25.0,
+            value=3.0,
+            step=0.1,
+            format="%.1f",
+        )
         von_anpassung_ausgeschlossen_pkv = st.number_input(
             'Von PKV-Anpassung unbeteiliger Betrag',
             min_value=0,
@@ -418,6 +418,7 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 f'{entlastung_pkv:.0f} € (Entlastung PKV) und 7.3 % von der Rente.'
             )
 
+        # Rückzahlung bei Leistungsfreiheit
         rel_rueckzahlung_leistungsfrei = (
             (
                 (rueckzahlung_leistungsfrei_prz / 100)
@@ -441,7 +442,11 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
                 beitrag * rel_rueckzahlung_leistungsfrei
                 + abs_rueckzahlung_leistungsfrei
             )
+
+        # Eigenanteil durchschnittlich
+        kosten += pkv_eigenanteil * (1 - anteil_leistungsfrei / 100) / 12
         y_beitrag[i] = beitrag + kosten
+
     if steuer_beruecksichtigen:
         hinweise.append(
             f'Mittlere Rückzahlung bei Leistungsfreiheit: '
@@ -456,6 +461,10 @@ def get_pkv_beitrag(x_alter: np.ndarray) -> Tuple[np.ndarray, set]:
             f'fix: {abs_rueckzahlung_leistungsfrei:.0f} €. '
             'Steuern nicht berücksichtigt.'
         )
+    hinweise.append(
+        f'Eigenanteil: {pkv_eigenanteil:.0f} € (durchschnittlich, '
+        f'bei {anteil_leistungsfrei:.0f} % Leistungsfreiheit).'
+    )
     hinweise = OrderedDict.fromkeys(hinweise)
     return y_beitrag, hinweise
 
